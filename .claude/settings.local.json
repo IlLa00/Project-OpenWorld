@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(\"C:\\\\Program Files\\\\Epic Games\\\\UE_5.5\\\\Engine\\\\Build\\\\BatchFiles\\\\Build.bat\" Project_OpenWorldEditor Win64 Development \"C:\\\\KHJ\\\\Project-OpenWorld\\\\Project_OpenWorld.uproject\" -waitmutex)"
+    ]
+  }
+}
