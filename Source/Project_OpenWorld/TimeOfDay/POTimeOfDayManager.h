@@ -63,10 +63,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time of Day|Sun")
 	float MinSunIntensity = 0.1f;
 
-	// 태양광 색상 커브 (시간대별) - 옵션 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time of Day|Sun")
-	TObjectPtr<UCurveLinearColor> SunColorCurve;
-
 	// 특정 시간으로 즉시 설정 
 	UFUNCTION(BlueprintCallable, Category = "Time of Day")
 	void SetTimeOfDay(float NewTime);
