@@ -212,13 +212,6 @@ float APOTimeOfDayManager::CalculateSunIntensity(float TimeOfDay) const
 
 FLinearColor APOTimeOfDayManager::CalculateSunColor(float TimeOfDay) const
 {
-	// Curve가 설정되어 있으면 사용
-	if (SunColorCurve)
-	{
-		float NormalizedTime = TimeOfDay / 24.0f;
-		return SunColorCurve->GetLinearColorValue(NormalizedTime);
-	}
-
 	// 기본 색상 계산
 	if (TimeOfDay >= 5.0f && TimeOfDay <= 7.0f)
 	{
