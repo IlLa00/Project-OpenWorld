@@ -8,6 +8,7 @@
 class UWeatherStateDataAsset;
 class UMaterialParameterCollection;
 class UNiagaraComponent;
+class APORVTManager;
 
 UCLASS()
 class PROJECT_OPENWORLD_API APOWeatherSystemManager : public AActor
@@ -48,6 +49,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weather|Data")
 	TMap<EWeatherType, TObjectPtr<UWeatherStateDataAsset>> WeatherDataMap;
+
+	/** RVT 매니저 참조 (레벨에 배치된 PORVTManager 액터, 없으면 BeginPlay에서 자동 탐색) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weather|RVT")
+	TObjectPtr<APORVTManager> RVTManager;
 
 	// 날씨 즉시 변경 
 	UFUNCTION(BlueprintCallable, Category = "Weather")

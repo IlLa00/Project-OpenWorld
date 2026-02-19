@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 using UnrealBuildTool;
 
 public class Project_OpenWorld : ModuleRules
@@ -11,7 +9,6 @@ public class Project_OpenWorld : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] {
 			"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput",
 			"Niagara", "UMG",
-			// World Partition & 오픈월드 최적화
 			"WorldPartitionEditor",
 			"PCG",
 		});
