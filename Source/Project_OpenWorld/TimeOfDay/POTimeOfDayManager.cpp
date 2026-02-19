@@ -178,59 +178,57 @@ void APOTimeOfDayManager::UpdateMaterialParameters()
 
 FRotator APOTimeOfDayManager::CalculateSunRotation(float TimeOfDay) const
 {
-	// 시간을 각도로 변환 (0시 = -90도, 12시 = 90도, 24시 = 270도)
-	// Pitch: 태양의 고도각 (-90 ~ 90)
-	// Yaw: 태양의 방위각 (동 → 남 → 서)
+	float Pitch;
+	if (TimeOfDay >= 6.0f && TimeOfDay <= 18.0f)
+	{
+		// 낮: 6시(0도) → 12시(-90도) → 18시(0도)
+		float DayProgress = (TimeOfDay - 6.0f) / 12.0f; // 0.0 ~ 1.0
+		Pitch = -FMath::Sin(DayProgress * PI) * 90.0f;  // 0 → -90 → 0
+	}
+	else
+	{
+		// 밤: 지평선 완전히 아래
+		Pitch = 90.0f;
+	}
 
-	// 0시(자정) = -90도, 6시(새벽) = 0도, 12시(정오) = 90도, 18시(저녁) = 0도, 24시 = -90도
-	float NormalizedTime = (TimeOfDay - 6.0f) / 12.0f; // 6시를 0으로 정규화
-	float Pitch = FMath::Sin(NormalizedTime * PI) * 90.0f; // -90 ~ 90도 범위
-
-	// 방위각 (동쪽에서 떠서 서쪽으로 짐)
-	float Yaw = (TimeOfDay / 24.0f) * 360.0f - 90.0f; // 동쪽(90도)에서 시작
+	// 방위각: 동쪽(6시) → 남쪽(12시) → 서쪽(18시)
+	float Yaw = (TimeOfDay / 24.0f) * 360.0f - 90.0f;
 
 	return FRotator(Pitch, Yaw, 0.0f);
 }
 
 float APOTimeOfDayManager::CalculateSunIntensity(float TimeOfDay) const
 {
-	// 낮(6~18시)에는 밝고, 밤(18~6시)에는 어두움
-	float NormalizedTime = (TimeOfDay - 6.0f) / 12.0f; // 6시를 0, 18시를 1로 정규화
-
 	if (TimeOfDay >= 6.0f && TimeOfDay <= 18.0f)
 	{
-		// 낮: Sin 곡선으로 부드러운 밝기 변화
-		float Intensity = FMath::Sin(NormalizedTime * PI);
-		return FMath::Lerp(MinSunIntensity, MaxSunIntensity, Intensity);
+		// 낮: Sin 곡선으로 부드러운 밝기 변화 (일출/일몰 → 0, 정오 → 최대)
+		float DayProgress = (TimeOfDay - 6.0f) / 12.0f;
+		float Intensity = FMath::Sin(DayProgress * PI);
+		return FMath::Lerp(0.0f, MaxSunIntensity, Intensity);
 	}
 	else
 	{
-		// 밤: 최소 강도
-		return MinSunIntensity;
+		// 밤: 태양 강도 0 (달빛은 SkyLight로 표현)
+		return 0.0f;
 	}
 }
 
 FLinearColor APOTimeOfDayManager::CalculateSunColor(float TimeOfDay) const
 {
-	// 기본 색상 계산
 	if (TimeOfDay >= 5.0f && TimeOfDay <= 7.0f)
 	{
-		// 새벽: 주황빛
 		return FLinearColor(1.0f, 0.6f, 0.4f);
 	}
 	else if (TimeOfDay >= 7.0f && TimeOfDay <= 17.0f)
 	{
-		// 낮: 밝은 노란빛
 		return FLinearColor(1.0f, 0.95f, 0.85f);
 	}
 	else if (TimeOfDay >= 17.0f && TimeOfDay <= 19.0f)
 	{
-		// 저녁: 붉은빛
 		return FLinearColor(1.0f, 0.5f, 0.3f);
 	}
 	else
 	{
-		// 밤: 푸른빛 (달빛)
 		return FLinearColor(0.4f, 0.5f, 0.8f);
 	}
 }
