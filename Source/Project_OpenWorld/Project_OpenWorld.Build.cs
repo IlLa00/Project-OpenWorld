@@ -8,9 +8,17 @@ public class Project_OpenWorld : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Niagara", "UMG" });
+		PublicDependencyModuleNames.AddRange(new string[] {
+			"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput",
+			"Niagara", "UMG",
+			// World Partition & 오픈월드 최적화
+			"WorldPartitionEditor",
+			"PCG",
+		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "RenderCore", "Renderer", "Slate", "SlateCore" });
+		PrivateDependencyModuleNames.AddRange(new string[] {
+			"RenderCore", "Renderer", "Slate", "SlateCore",
+		});
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
