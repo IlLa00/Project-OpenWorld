@@ -3,7 +3,18 @@
     "allow": [
       "Bash(dir:*)",
       "Bash(findstr:*)",
-      "Bash(\"C:\\\\Program Files\\\\Epic Games\\\\UE_5.5\\\\Engine\\\\Build\\\\BatchFiles\\\\Build.bat\" Project_OpenWorldEditor Win64 Development \"C:\\\\KHJ\\\\Project-OpenWorld\\\\Project_OpenWorld.uproject\" -waitmutex)"
+      "Bash(\"C:\\\\Program Files\\\\Epic Games\\\\UE_5.5\\\\Engine\\\\Build\\\\BatchFiles\\\\Build.bat\" Project_OpenWorldEditor Win64 Development \"C:\\\\KHJ\\\\Project-OpenWorld\\\\Project_OpenWorld.uproject\" -waitmutex)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(git clone:*)",
+      "WebFetch(domain:careers.devsisters.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:careers.nexon.com)",
+      "Bash(cmd /c:*)",
+      "Bash(gh pr create:*)",
+      "Bash(git config:*)"
     ]
   }
 }
