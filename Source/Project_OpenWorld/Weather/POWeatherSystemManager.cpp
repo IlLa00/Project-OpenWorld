@@ -3,6 +3,7 @@
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "../RVT/PORVTManager.h"
 
 APOWeatherSystemManager::APOWeatherSystemManager()
 {
@@ -12,6 +13,21 @@ APOWeatherSystemManager::APOWeatherSystemManager()
 void APOWeatherSystemManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// RVTManager 자동 탐색 (에디터에서 직접 할당하지 않은 경우)
+	if (!RVTManager)
+	{
+		AActor* FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), APORVTManager::StaticClass());
+		RVTManager = Cast<APORVTManager>(FoundActor);
+		if (RVTManager)
+		{
+			UE_LOG(LogTemp, Log, TEXT("[WeatherSystem] RVTManager 자동 탐색 성공"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[WeatherSystem] RVTManager를 찾을 수 없음. 레벨에 BP_PORVTManager를 배치하세요."));
+		}
+	}
 
 	// 초기 날씨 적용
 	SetWeatherImmediate(CurrentWeather);
@@ -119,73 +135,79 @@ void APOWeatherSystemManager::UpdateWeatherTransition(float DeltaTime)
 	}
 }
 
-void APOWeatherSystemManager::UpdateMaterialParameters()
+// 날씨 타입 → 머티리얼 파라미터 변환 헬퍼
+static void GetWeatherMaterialParams(EWeatherType Weather,
+	float& OutWetness, float& OutSnowCoverage, float& OutRainIntensity,
+	float& OutFogDensity, float& OutWindStrength)
 {
-	if (!WeatherMPC)
-	{
-		return;
-	}
+	OutWetness = OutSnowCoverage = OutRainIntensity = OutFogDensity = OutWindStrength = 0.0f;
 
-	UMaterialParameterCollectionInstance* MPCInstance = GetWorld()->GetParameterCollectionInstance(WeatherMPC);
-	if (!MPCInstance)
-	{
-		return;
-	}
-
-	// 기본 파라미터 설정 (현재는 더미 값, 추후 WeatherDataAsset에서 가져올 예정)
-	float Wetness = 0.0f;
-	float SnowCoverage = 0.0f;
-	float FogDensity = 0.0f;
-	float RainIntensity = 0.0f;
-
-	// 현재 날씨에 따라 파라미터 설정
-	switch (CurrentWeather)
+	switch (Weather)
 	{
 	case EWeatherType::Clear:
-		Wetness = 0.0f;
-		SnowCoverage = 0.0f;
-		FogDensity = 0.0f;
-		RainIntensity = 0.0f;
+		// 모두 0 (기본값)
 		break;
-
 	case EWeatherType::Cloudy:
-		FogDensity = 0.2f;
+		OutFogDensity   = 0.2f;
+		OutWindStrength = 0.3f;
 		break;
-
 	case EWeatherType::Rainy:
-		Wetness = 1.0f;
-		RainIntensity = 0.8f;
-		FogDensity = 0.3f;
+		OutWetness      = 1.0f;
+		OutRainIntensity= 0.8f;
+		OutFogDensity   = 0.3f;
+		OutWindStrength = 0.5f;
 		break;
-
 	case EWeatherType::Snowy:
-		SnowCoverage = 1.0f;
-		FogDensity = 0.4f;
+		OutSnowCoverage = 1.0f;
+		OutFogDensity   = 0.4f;
+		OutWindStrength = 0.4f;
 		break;
-
 	case EWeatherType::Foggy:
-		FogDensity = 1.0f;
+		OutFogDensity   = 1.0f;
+		OutWindStrength = 0.1f;
 		break;
-
 	case EWeatherType::Stormy:
-		Wetness = 1.0f;
-		RainIntensity = 1.0f;
-		FogDensity = 0.5f;
+		OutWetness      = 1.0f;
+		OutRainIntensity= 1.0f;
+		OutFogDensity   = 0.5f;
+		OutWindStrength = 1.0f;
 		break;
 	}
+}
 
-	// 전환 중이면 보간
+void APOWeatherSystemManager::UpdateMaterialParameters()
+{
+	if (!RVTManager)
+	{
+		return;
+	}
+
+	float Wetness, SnowCoverage, RainIntensity, FogDensity, WindStrength;
+
 	if (TransitionInfo.bIsTransitioning)
 	{
-		float Alpha = TransitionInfo.TransitionProgress;
-		// TODO: 이전 날씨와 목표 날씨 값을 보간
+		// 전환 중: 이전 날씨와 목표 날씨 값을 보간
+		float PrevWetness, PrevSnow, PrevRain, PrevFog, PrevWind;
+		float NextWetness, NextSnow, NextRain, NextFog, NextWind;
+
+		GetWeatherMaterialParams(TransitionInfo.PreviousWeather, PrevWetness, PrevSnow, PrevRain, PrevFog, PrevWind);
+		GetWeatherMaterialParams(TransitionInfo.TargetWeather,   NextWetness, NextSnow, NextRain, NextFog, NextWind);
+
+		float Alpha = FMath::SmoothStep(0.0f, 1.0f, TransitionInfo.TransitionProgress);
+		Wetness      = FMath::Lerp(PrevWetness, NextWetness, Alpha);
+		SnowCoverage = FMath::Lerp(PrevSnow,    NextSnow,    Alpha);
+		RainIntensity= FMath::Lerp(PrevRain,    NextRain,    Alpha);
+		FogDensity   = FMath::Lerp(PrevFog,     NextFog,     Alpha);
+		WindStrength = FMath::Lerp(PrevWind,    NextWind,    Alpha);
+	}
+	else
+	{
+		// 전환 완료: 현재 날씨 파라미터 직접 사용
+		GetWeatherMaterialParams(CurrentWeather, Wetness, SnowCoverage, RainIntensity, FogDensity, WindStrength);
 	}
 
-	// MPC 파라미터 설정
-	MPCInstance->SetScalarParameterValue(FName("Wetness"), Wetness);
-	MPCInstance->SetScalarParameterValue(FName("SnowCoverage"), SnowCoverage);
-	MPCInstance->SetScalarParameterValue(FName("FogDensity"), FogDensity);
-	MPCInstance->SetScalarParameterValue(FName("RainIntensity"), RainIntensity);
+	// RVTManager에 파라미터 전달 (부드러운 보간은 RVTManager에서 처리)
+	RVTManager->SetWeatherParametersTarget(Wetness, SnowCoverage, RainIntensity, FogDensity, WindStrength, 0.0f);
 }
 
 void APOWeatherSystemManager::UpdateAutoWeatherChange(float DeltaTime)
