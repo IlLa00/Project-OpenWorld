@@ -14,7 +14,15 @@
       "WebFetch(domain:careers.nexon.com)",
       "Bash(cmd /c:*)",
       "Bash(gh pr create:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(wc -l:*)",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\KHJ\\\\Project-OpenWorld\\\\Source\\\\Project_OpenWorld\\\\NPC\\\\StateTree\")",
+      "Bash(Out-Null)",
+      "Bash(Write-Output \"done\")",
+      "Bash(where.exe:*)",
+      "Bash(reg query:*)",
+      "Bash(powershell -Command \"Get-ChildItem ''C:\\\\'' -Directory | Select-Object Name\")",
+      "Bash(powershell -Command:*)"
     ]
   }
 }
